@@ -43,6 +43,10 @@ class Telegram {
         return [ 'app', 'config', 'logger' ];
     }
 
+    static get Scene() {
+        return Scene;
+    }
+
     registerScene(scene) {
         this.scenes.add(scene);
     }
@@ -61,17 +65,11 @@ class Telegram {
         const session = new LocalSession({ database: this._config.get(`session.file`) });
         this.bot.use(session.middleware());
 
-        const flow = new TelegrafFlow();
-        this.bot.use(flow.middleware());
+        this.flow = new TelegrafFlow();
+        this.bot.use(this.flow.middleware());
 
-        for (let scene of this.scenes) {
-            let teleScene = new Scene(scene.name);
-            if (scene.onEnter)
-                teleScene.enter(scene.onEnter.bind(scene));
-
-            flow.register(teleScene);
-            this.bot.command(scene.name, ctx => ctx.flow.enter(scene.name));
-        }
+        for (let scene of this.scenes)
+            scene.register(this);
     }
 
     /**
@@ -83,7 +81,7 @@ class Telegram {
         if (name !== this.name)
             throw new Error(`Server ${name} was not properly initialized`);
 
-        this._logger.debug('telegraf', `${this.name}: Starting the bot`);
+        this._logger.debug('Telegram', `${this.name}: Starting the bot`);
         this.bot.startPolling();
         this.listening = true;
     }
