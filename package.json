@@ -1,0 +1,14 @@
+{
+  "name": "arpen-telegram",
+  "version": "0.0.1",
+  "license": "MIT",
+  "author": "Ross Basarevych <basarevych@gmail.com>",
+  "description": "ARPEN",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/basarevych/arpen-telegram.git"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  }
+}
