@@ -47,9 +47,14 @@ class Telegram {
         return Scene;
     }
 
+    /**
+     * Register new scene
+     * @param {object} scene                    Scene instance
+     */
     registerScene(scene) {
         this.scenes.add(scene);
     }
+
     /**
      * Initialize the server
      * @param {string} name                     Config section name
@@ -68,8 +73,17 @@ class Telegram {
         this.flow = new TelegrafFlow();
         this.bot.use(this.flow.middleware());
 
-        for (let scene of this.scenes)
-            scene.register(this);
+        return Array.from(this.scenes).reduce(
+            async (prev, cur) => {
+                await prev;
+
+                let result = cur.register(this);
+                if (result === null || typeof result !== 'object' || typeof result.then !== 'function')
+                    throw new Error(`Scene '${cur.name}' register() did not return a Promise`);
+                return result;
+            },
+            Promise.resolve()
+        );
     }
 
     /**
@@ -102,6 +116,10 @@ class Telegram {
         }
     }
 
+    /**
+     * Handle bot errors
+     * @param {Error} error                     Error object
+     */
     onError(error) {
         this._logger.error(new NError(error, 'Telegram.onError()'));
     }
