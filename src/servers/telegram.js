@@ -6,7 +6,6 @@ const Telegraf = require('telegraf');
 const TelegrafFlow = require('telegraf-flow');
 const LocalSession = require('telegraf-session-local');
 const NError = require('nerror');
-const { Scene } = TelegrafFlow;
 
 /**
  * Bot server class
@@ -41,10 +40,6 @@ class Telegram {
      */
     static get requires() {
         return [ 'app', 'config', 'logger' ];
-    }
-
-    static get Scene() {
-        return Scene;
     }
 
     /**
