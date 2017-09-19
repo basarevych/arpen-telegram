@@ -1,10 +1,8 @@
 /**
  * Telegram bot server
- * @module servers/telegram
+ * @module telegram/servers/telegram
  */
 const Telegraf = require('telegraf');
-const TelegrafFlow = require('telegraf-flow');
-const LocalSession = require('telegraf-session-local');
 const NError = require('nerror');
 
 /**
@@ -19,7 +17,6 @@ class Telegram {
      */
     constructor(app, config, logger) {
         this.name = null;
-        this.scenes = new Set();
 
         this._app = app;
         this._config = config;
@@ -58,23 +55,40 @@ class Telegram {
     async init(name) {
         this.name = name;
 
+        this._logger.debug('telegram', `${this.name}: Creating server`);
         this.bot = new Telegraf(this._config.get(`servers.${name}.token`));
         this.bot.catch(this.onError.bind(this));
         this.listening = false;
 
-        const session = new LocalSession({ database: this._config.get(`session.file`) });
-        this.bot.use(session.middleware());
+        let middlewareConfig = this._config.get(`servers.${name}.middleware`);
+        if (!Array.isArray(middlewareConfig))
+            return;
 
-        this.flow = new TelegrafFlow();
-        this.bot.use(this.flow.middleware());
+        this._logger.debug('telegram', `${this.name}: Loading middleware`);
+        let middleware;
+        if (this._app.has('telegram.middleware')) {
+            middleware = this._app.get('telegram.middleware');
+        } else {
+            middleware = new Map();
+            this._app.registerInstance(middleware, 'telegram.middleware');
+        }
 
-        return Array.from(this.scenes).reduce(
+        return middlewareConfig.reduce(
             async (prev, cur) => {
                 await prev;
 
-                let result = cur.register(this);
+                let obj;
+                if (middleware.has(cur)) {
+                    obj = middleware.get(cur);
+                } else {
+                    obj = this._app.get(cur);
+                    middleware.set(cur, obj);
+                }
+
+                this._logger.debug('express', `${this.name}: Registering middleware ${cur}`);
+                let result = obj.register(this);
                 if (result === null || typeof result !== 'object' || typeof result.then !== 'function')
-                    throw new Error(`Scene '${cur.name}' register() did not return a Promise`);
+                    throw new Error(`Middleware '${cur}' register() did not return a Promise`);
                 return result;
             },
             Promise.resolve()
@@ -90,7 +104,7 @@ class Telegram {
         if (name !== this.name)
             throw new Error(`Server ${name} was not properly initialized`);
 
-        this._logger.debug('Telegram', `${this.name}: Starting the bot`);
+        this._logger.debug('telegram', `${this.name}: Starting the bot`);
         this.bot.startPolling();
         this.listening = true;
     }
