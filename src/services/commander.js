@@ -67,8 +67,10 @@ class Commander {
                         if (triggered)
                             return false; // multiple match
                         triggered = command;
+                        result.push(matches);
+                    } else {
+                        result.push(false);
                     }
-                    result.push(matches);
                 }
             }
             if (triggered) {
