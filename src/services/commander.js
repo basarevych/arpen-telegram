@@ -41,7 +41,7 @@ class Commander {
             ctx.commander = {
                 process: this.process.bind(this, ctx),
             };
-            next(ctx);
+            return next(ctx);
         };
     }
 
