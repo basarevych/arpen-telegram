@@ -2,8 +2,9 @@
  * Library exports
  */
 const Telegraf = require('telegraf');
+const Flow = require('telegraf-flow');
 
 module.exports = {
-    Scene: require('telegraf-flow').Scene,
-    Markup: Telegraf.Markup,
+    Telegraf,
+    Flow,
 };
