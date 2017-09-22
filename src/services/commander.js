@@ -73,10 +73,8 @@ class Commander {
                     }
                 }
             }
-            if (triggered) {
-                await triggered.process(ctx, result, scene);
-                return true;
-            }
+            if (triggered)
+                return await triggered.process(ctx, result, scene);
         } catch (error) {
             try {
                 this._logger.error(new NError(error, 'Commander.process()'));
