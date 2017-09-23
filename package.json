@@ -1,6 +1,6 @@
 {
   "name": "arpen-telegram",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "license": "MIT",
   "author": "Ross Basarevych <basarevych@gmail.com>",
   "description": "ARPEN",
@@ -12,9 +12,11 @@
     "debug": "~3.0.1",
     "nerror": "~1.0.0",
     "merge": "~1.2.0",
-    "telegraf": "~3.10.1",
-    "telegraf-flow": "~8.2.2",
     "telegraf-session-local": "~0.0.4"
+  },
+  "peerDependencies": {
+    "telegraf": "~3.10.1",
+    "telegraf-flow": "~8.2.2"
   },
   "devDependencies": {
     "eslint": "~4.6.1",
