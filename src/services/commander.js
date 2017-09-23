@@ -52,8 +52,9 @@ class Commander {
     async process(ctx, scene) {
         try {
             let triggered = null;
-            let result = [];
+            let match = null;
             for (let command of this.commands.values()) {
+                let result = [];
                 for (let variant of command.syntax) {
                     let matches = [];
                     let allMatched = true;
@@ -72,9 +73,11 @@ class Commander {
                         result.push(false);
                     }
                 }
+                if (triggered && !match)
+                    match = result; // triggered command results
             }
             if (triggered)
-                return await triggered.process(ctx, result, scene);
+                return await triggered.process(ctx, match, scene);
         } catch (error) {
             try {
                 this._logger.error(new NError(error, 'Commander.process()'));
