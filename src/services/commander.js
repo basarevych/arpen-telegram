@@ -12,12 +12,15 @@ class Commander {
      * Create the service
      * @param {App} app                     Application
      * @param {Logger} logger               Logger service
+     * @param {Util} util                   Util service
      */
-    constructor(app, logger) {
+    constructor(app, logger, util) {
         this._app = app;
         this._logger = logger;
+        this._util = util;
 
         this.commands = new Map();
+        this.callbacks = new Map();
     }
 
     /**
@@ -33,7 +36,7 @@ class Commander {
      * @type {string[]}
      */
     static get requires() {
-        return [ 'app', 'logger' ];
+        return [ 'app', 'logger', 'util' ];
     }
 
     middleware() {
@@ -49,8 +52,23 @@ class Commander {
         this.commands.set(command.name, command);
     }
 
+    setCallback(ctx, cb) {
+        let id = this._util.getRandomString(32);
+        ctx.session.callback = id;
+        this.callbacks.set(id, cb);
+    }
+
     async process(ctx, scene) {
         try {
+            if (ctx.session.callback) {
+                let callback = this.callbacks.get(ctx.session.callback);
+                delete ctx.session.callback;
+                if (callback) {
+                    this.callbacks.delete(ctx.session.callback);
+                    return await callback(this, ctx, scene);
+                }
+            }
+
             let triggered = null;
             let match = null;
             for (let command of this.commands.values()) {
@@ -77,7 +95,7 @@ class Commander {
                     match = result; // triggered command results
             }
             if (triggered)
-                return await triggered.process(ctx, match, scene);
+                return await triggered.process(this, ctx, match, scene);
         } catch (error) {
             try {
                 this._logger.error(new NError(error, 'Commander.process()'));
