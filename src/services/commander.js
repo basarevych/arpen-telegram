@@ -73,23 +73,27 @@ class Commander {
             let match = null;
             for (let command of this.commands.values()) {
                 let result = [];
+                let variantMatched = false;
                 for (let variant of command.syntax) {
-                    let matches = [];
+                    let reMatches = [];
                     let allMatched = true;
                     for (let re of variant) {
                         let match = re.exec(ctx.message.text);
                         if (!match)
                             allMatched = false;
-                        matches.push(match);
+                        reMatches.push(match);
                     }
                     if (allMatched) {
-                        if (triggered)
-                            return false; // multiple match
-                        triggered = command;
-                        result.push(matches);
+                        variantMatched = true;
+                        result.push(reMatches);
                     } else {
                         result.push(false);
                     }
+                }
+                if (variantMatched) {
+                    if (triggered)
+                        return false; // multiple match
+                    triggered = command;
                 }
                 if (triggered && !match)
                     match = result; // triggered command results
