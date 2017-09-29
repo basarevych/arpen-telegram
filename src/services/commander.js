@@ -3,6 +3,7 @@
  * @module telegram/services/commander
  */
 const NError = require('nerror');
+const { Markup } = require('telegraf');
 
 /**
  * Service class
@@ -24,11 +25,11 @@ class Commander {
     }
 
     /**
-     * Service name is 'commander'
+     * Service name is 'telegram.commander'
      * @type {string}
      */
     static get provides() {
-        return 'commander';
+        return 'telegram.commander';
     }
 
     /**
