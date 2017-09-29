@@ -37,7 +37,7 @@ class Commander {
      * @return {Promise}
      */
     async register(server) {
-        server.commander = this._app.get('telegram.commander');
+        server.commander = this._app.get('modules.telegram.services.commander');
         server.bot.use(server.commander.middleware());
     }
 }

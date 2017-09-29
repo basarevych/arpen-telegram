@@ -22,11 +22,11 @@ class Pager {
     }
 
     /**
-     * Service name is 'telegram.pager'
+     * Service name is 'modules.telegram.services.pager'
      * @type {string}
      */
     static get provides() {
-        return 'telegram.pager';
+        return 'modules.telegram.services.pager';
     }
 
     /**
