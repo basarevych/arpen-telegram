@@ -22,11 +22,11 @@ class Pager {
     }
 
     /**
-     * Service name is 'modules.telegram.services.pager'
+     * Service name is 'telegram.services.pager'
      * @type {string}
      */
     static get provides() {
-        return 'modules.telegram.services.pager';
+        return 'telegram.services.pager';
     }
 
     /**
@@ -122,7 +122,7 @@ class Pager {
                 }
 
                 if (this.search) {
-                    let result = await this.search(page, extra);
+                    let result = await this.search(ctx, page, extra);
                     result.offset = offset;
                     if (result.enablePager)
                         return ctx.editMessageText(result.message, this._getMarkup(result, extra));
@@ -155,7 +155,7 @@ class Pager {
                 }
 
                 if (this.search) {
-                    let result = await this.search(page, extra);
+                    let result = await this.search(ctx, page, extra);
                     result.offset = offset;
                     result.pageNumber = page;
                     if (result.enablePager)
@@ -191,7 +191,7 @@ class Pager {
             if (!this.search)
                 return;
 
-            let result = await this.search(page, extra);
+            let result = await this.search(ctx, page, extra);
             result.offset = 1;
             if (result.enablePager)
                 ctx.reply(result.message, this._getMarkup(result, extra));

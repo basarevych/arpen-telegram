@@ -25,11 +25,11 @@ class Commander {
     }
 
     /**
-     * Service name is 'modules.telegram.services.commander'
+     * Service name is 'telegram.services.commander'
      * @type {string}
      */
     static get provides() {
-        return 'modules.telegram.services.commander';
+        return 'telegram.services.commander';
     }
 
     /**
