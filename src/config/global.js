@@ -6,7 +6,8 @@ module.exports = {
     autoload: [
         'module.js',
         'servers',
-        'middleware',
         'services',
+        'middleware',
+        'commands',
     ],
 };

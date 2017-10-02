@@ -2,8 +2,8 @@
  * Telegram command handler
  * @module telegram/services/commander
  */
+const natural = require('natural');
 const NError = require('nerror');
-const { Markup } = require('telegraf');
 
 /**
  * Service class
@@ -14,11 +14,13 @@ class Commander {
      * @param {App} app                     Application
      * @param {Logger} logger               Logger service
      * @param {Util} util                   Util service
+     * @param {I18n} i18n                   I18n service
      */
-    constructor(app, logger, util) {
+    constructor(app, logger, util, i18n) {
         this._app = app;
         this._logger = logger;
         this._util = util;
+        this._i18n = i18n;
 
         this.commands = new Map();
         this.callbacks = new Map();
@@ -37,9 +39,13 @@ class Commander {
      * @type {string[]}
      */
     static get requires() {
-        return [ 'app', 'logger', 'util' ];
+        return [ 'app', 'logger', 'util', 'i18n' ];
     }
 
+    /**
+     * Telegram bot middleware
+     * @return {function}
+     */
     middleware() {
         return (ctx, next) => {
             ctx.commander = {
@@ -49,16 +55,31 @@ class Commander {
         };
     }
 
+    /**
+     * Add command
+     * @param {object} command
+     */
     add(command) {
         this.commands.set(command.name, command);
     }
 
+    /**
+     * Activate callback
+     * @param {object} ctx
+     * @param {function} cb
+     */
     setCallback(ctx, cb) {
         let id = this._util.getRandomString(32);
         ctx.session.callback = id;
         this.callbacks.set(id, cb);
     }
 
+    /**
+     * Process input looking for commands
+     * @param {object} ctx
+     * @param {object} scene
+     * @return {Promise} Resolves to true if command found
+     */
     async process(ctx, scene) {
         try {
             if (ctx.session.callback) {
@@ -70,49 +91,73 @@ class Commander {
                 }
             }
 
-            let triggered = null;
-            let match = null;
+            let triggered = false;
             for (let command of this.commands.values()) {
-                let result = [];
-                let variantMatched = false;
-                for (let variant of command.syntax) {
-                    let reMatches = [];
-                    let allMatched = true;
-                    for (let re of variant) {
-                        let match = re.exec(ctx.message.text);
-                        if (!match)
-                            allMatched = false;
-                        reMatches.push(match);
-                    }
-                    if (allMatched) {
-                        variantMatched = true;
-                        result.push(reMatches);
-                    } else {
-                        result.push(false);
-                    }
-                }
-                if (variantMatched) {
-                    if (triggered)
-                        return false; // multiple match
-                    triggered = command;
-                }
-                if (triggered && !match)
-                    match = result; // triggered command results
+                if (await command.process(this, ctx, scene))
+                    triggered = true;
             }
-            if (triggered)
-                return await triggered.process(this, ctx, match, scene);
+            return triggered;
         } catch (error) {
-            try {
-                this._logger.error(new NError(error, 'Commander.process()'));
-                await ctx.replyWithHTML(
-                    `<i>Произошла ошибка. Пожалуйста, попробуйте повторить позднее.</i>`,
-                    Markup.removeKeyboard().extra()
-                );
-            } catch (error) {
-                // do nothing
-            }
+            this._logger.error(new NError(error, { ctx }, 'Commander.process()'));
         }
         return false;
+    }
+
+    /**
+     * Check if input matches syntax
+     * @param {string} input
+     * @param {object} syntax
+     * @return {*}
+     */
+    match(input, syntax) {
+        let results = {};
+        for (let variant of Object.keys(syntax)) {
+            results[variant] = {};
+            for (let re of Object.keys(syntax[variant])) {
+                let match = syntax[variant][re].exec(input);
+                if (!match) {
+                    results[variant] = false;
+                    break;
+                }
+                results[variant][re] = match;
+            }
+        }
+        for (let variant of Object.keys(results)) {
+            if (results[variant])
+                return results;
+        }
+        return false;
+    }
+
+    /**
+     * Check if input contains everything of search
+     * @param {string} locale
+     * @param {string} input
+     * @param {string} search
+     * @return {boolean}
+     */
+    hasAll(locale, input, search) {
+        let inputTokens = this.stem(locale, input);
+        let searchTokens = this.stem(locale, search);
+        for (let item of searchTokens) {
+            if (!inputTokens.includes(item))
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * Tokenize and stem
+     * @param {string} locale
+     * @param {string} input
+     * @return {string[]}
+     */
+    stem(locale, input) {
+        if (!locale)
+            locale = this._i18n.defaultLocale;
+        if (locale === 'ru')
+            return natural.PorterStemmerRu.tokenizeAndStem(input);
+        return natural.PorterStemmer.tokenizeAndStem(input);
     }
 }
 

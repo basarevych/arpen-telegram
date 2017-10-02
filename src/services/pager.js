@@ -3,7 +3,7 @@
  * @module telegram/services/pager
  */
 const NError = require('nerror');
-const { Markup, Extra } = require('telegraf');
+const { Extra } = require('telegraf');
 
 /**
  * Service class
@@ -130,15 +130,7 @@ class Pager {
                         return ctx.editMessageText(result.message);
                 }
             } catch (error) {
-                try {
-                    this._logger.error(new NError(error, 'Pager.pageHandler()'));
-                    await ctx.replyWithHTML(
-                        `<i>Произошла ошибка. Пожалуйста, попробуйте повторить позднее.</i>`,
-                        Markup.removeKeyboard().extra()
-                    );
-                } catch (error) {
-                    // do nothing
-                }
+                this._logger.error(new NError(error, { ctx }, 'Pager.pageHandler()'));
             }
         });
 
@@ -164,15 +156,7 @@ class Pager {
                         return ctx.editMessageText(ctx.callbackQuery.message.text);
                 }
             } catch (error) {
-                try {
-                    this._logger.error(new NError(error, 'Pager.offsetHandler()'));
-                    await ctx.replyWithHTML(
-                        `<i>Произошла ошибка. Пожалуйста, попробуйте повторить позднее.</i>`,
-                        Markup.removeKeyboard().extra()
-                    );
-                } catch (error) {
-                    // do nothing
-                }
+                this._logger.error(new NError(error, { ctx }, 'Pager.offsetHandler()'));
             }
         });
 
@@ -198,15 +182,7 @@ class Pager {
             else
                 ctx.reply(result.message);
         } catch (error) {
-            try {
-                this._logger.error(new NError(error, 'Pager.sendPage()'));
-                await ctx.replyWithHTML(
-                    `<i>Произошла ошибка. Пожалуйста, попробуйте повторить позднее.</i>`,
-                    Markup.removeKeyboard().extra()
-                );
-            } catch (error) {
-                // do nothing
-            }
+            this._logger.error(new NError(error, { ctx }, 'Pager.sendPage()'));
         }
     }
 

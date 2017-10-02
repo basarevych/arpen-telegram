@@ -3,7 +3,7 @@
  * @module telegram/services/calendar
  */
 const NError = require('nerror');
-const { Markup, Extra } = require('telegraf');
+const { Extra } = require('telegraf');
 
 /**
  * Service class
@@ -13,26 +13,13 @@ class Calendar {
      * Create the service
      * @param {App} app                     Application
      * @param {Logger} logger               Logger service
-     * @param {object} options              Options
      */
-    constructor(app, logger, options) {
+    constructor(app, logger) {
         this._app = app;
         this._logger = logger;
         this._prefix = 'calendar';
-
-        this.options = Object.assign(
-            {
-                startWeekDay: 0,
-                weekDayNames: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
-                monthNames: [
-                    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-                ],
-                minDate: null,
-                maxDate: null
-            },
-            options
-        );
+        this._minDate = null;
+        this._maxDate = null;
     }
 
     /**
@@ -53,11 +40,9 @@ class Calendar {
 
     /**
      * Check if myDate is in same year and month as testDate
-     *
-     * @param {*Date} myDate input date
-     * @param {*Date} testDate test date
-     *
-     * @returns bool
+     * @param {Date} myDate input date
+     * @param {Date} testDate test date
+     * @return {boolean}
      */
     static isSameMonth(myDate, testDate) {
         if (!myDate) return false;
@@ -69,7 +54,8 @@ class Calendar {
 
     /**
      * This uses unicode to draw strikethrough on text
-     * @param {*String} text text to modify
+     * @param {string} text text to modify
+     * @return {string}
      */
     static strikethroughText(text) {
         return text.split('').reduce(function (acc, char) {
@@ -77,6 +63,11 @@ class Calendar {
         }, '');
     }
 
+    /**
+     * Format date string
+     * @param {date} date
+     * @return {string}
+     */
     static toYyyymmdd(date) {
         let mm = date.getMonth() + 1; // getMonth() is zero-based
         let dd = date.getDate();
@@ -122,7 +113,7 @@ class Calendar {
 
     /**
      * Handler callback setter
-     * @param {function} search
+     * @param {function} handler
      */
     set handler(handler) {
         this._handler = handler;
@@ -134,6 +125,40 @@ class Calendar {
      */
     get handler() {
         return this._handler;
+    }
+
+    /**
+     * Get options
+     * @param {object} ctx
+     * @return {object}
+     */
+    getOptions(ctx) {
+        return {
+            startWeekDay: parseInt(ctx.i18n('start_week_day')),
+            weekDayNames: [
+                ctx.i18n('sunday_short'),
+                ctx.i18n('monday_short'),
+                ctx.i18n('tuesday_short'),
+                ctx.i18n('wednesday_short'),
+                ctx.i18n('thursday_short'),
+                ctx.i18n('friday_short'),
+                ctx.i18n('saturday_short'),
+            ],
+            monthNames: [
+                ctx.i18n('january_short'),
+                ctx.i18n('february_short'),
+                ctx.i18n('march_short'),
+                ctx.i18n('april_short'),
+                ctx.i18n('may_short'),
+                ctx.i18n('june_short'),
+                ctx.i18n('july_short'),
+                ctx.i18n('august_short'),
+                ctx.i18n('september_short'),
+                ctx.i18n('october_short'),
+                ctx.i18n('november_short'),
+                ctx.i18n('december_short'),
+            ],
+        };
     }
 
     /**
@@ -156,15 +181,7 @@ class Calendar {
                 if (this.handler)
                     await this.handler(ctx, date);
             } catch (error) {
-                try {
-                    this._logger.error(new NError(error, 'Calendar.dateHandler()'));
-                    await ctx.replyWithHTML(
-                        `<i>Произошла ошибка. Пожалуйста, попробуйте повторить позднее.</i>`,
-                        Markup.removeKeyboard().extra()
-                    );
-                } catch (error) {
-                    // do nothing
-                }
+                this._logger.error(new NError(error, { ctx }, 'Calendar.dateHandler()'));
             }
         });
 
@@ -181,17 +198,9 @@ class Calendar {
                 date.setMonth(date.getMonth() - 1);
 
                 let prevText = ctx.callbackQuery.message.text;
-                ctx.editMessageText(prevText, this._getMarkup(date));
+                ctx.editMessageText(prevText, this._getMarkup(ctx, date));
             } catch (error) {
-                try {
-                    this._logger.error(new NError(error, 'Calendar.prevHandler()'));
-                    await ctx.replyWithHTML(
-                        `<i>Произошла ошибка. Пожалуйста, попробуйте повторить позднее.</i>`,
-                        Markup.removeKeyboard().extra()
-                    );
-                } catch (error) {
-                    // do nothing
-                }
+                this._logger.error(new NError(error, { ctx }, 'Calendar.prevHandler()'));
             }
         });
 
@@ -208,17 +217,9 @@ class Calendar {
                 date.setMonth(date.getMonth() + 1);
 
                 let prevText = ctx.callbackQuery.message.text;
-                ctx.editMessageText(prevText, this._getMarkup(date));
+                ctx.editMessageText(prevText, this._getMarkup(ctx, date));
             } catch (error) {
-                try {
-                    this._logger.error(new NError(error, 'Calendar.nextHandler()'));
-                    await ctx.replyWithHTML(
-                        `<i>Произошла ошибка. Пожалуйста, попробуйте повторить позднее.</i>`,
-                        Markup.removeKeyboard().extra()
-                    );
-                } catch (error) {
-                    // do nothing
-                }
+                this._logger.error(new NError(error, { ctx }, 'Calendar.nextHandler()'));
             }
         });
 
@@ -227,34 +228,64 @@ class Calendar {
 
     /**
      * Return Calendar Markup
+     * @param {object} ctx
+     * @return {object}
      */
-    getCalendar() {
-        return this._getMarkup(new Date());
+    getCalendar(ctx) {
+        return this._getMarkup(ctx, new Date());
     }
 
+    /**
+     * No dates before this
+     * @param {Date} date
+     */
     setMinDate(date) {
-        this.options.minDate = date;
+        this._minDate = date;
     }
 
+    /**
+     * No dates after this
+     * @param {Date} date
+     */
     setMaxDate(date) {
-        this.options.maxDate = date;
+        this._maxDate = date;
     }
 
-    _getMarkup(date) {
+    /**
+     * Retrieve markup
+     * @param {object} ctx
+     * @param {Date} date
+     * @return {object}
+     */
+    _getMarkup(ctx, date) {
         return Extra.HTML().markup((m) => {
-            return m.inlineKeyboard(this._getPage(m, date));
+            return m.inlineKeyboard(this._getPage(ctx, m, date));
         });
     }
 
-    _getPage(m, date) {
+    /**
+     * Page of calendar
+     * @param {object} ctx
+     * @param {object} m
+     * @param {Date} date
+     * @return {Array}
+     */
+    _getPage(ctx, m, date) {
         let page = [];
-        this._addHeader(page, m, date);
-        this._addDays(page, m, date);
+        this._addHeader(ctx, page, m, date);
+        this._addDays(ctx, page, m, date);
         return page;
     }
 
-    _addHeader(page, m, date) {
-        let monthName = this.options.monthNames[date.getMonth()];
+    /**
+     * Header of calendar
+     * @param {object} ctx
+     * @param {Array} page
+     * @param {object} m
+     * @param {Date} date
+     */
+    _addHeader(ctx, page, m, date) {
+        let monthName = this.getOptions(ctx).monthNames[date.getMonth()];
         let year = date.getFullYear();
 
         let header = [];
@@ -273,10 +304,17 @@ class Calendar {
 
         page.push(header);
 
-        page.push(this.options.weekDayNames.map(e => m.callbackButton(e, `${this.prefix}-ignore`)));
+        page.push(this.getOptions(ctx).weekDayNames.map(e => m.callbackButton(e, `${this.prefix}-ignore`)));
     }
 
-    _addDays(page, m, date) {
+    /**
+     * Body of calendar
+     * @param {object} ctx
+     * @param {Array} page
+     * @param {object} m
+     * @param {Date} date
+     */
+    _addDays(ctx, page, m, date) {
         let maxMonthDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
         let maxDay = this._getMaxDay(date);
         let minDay = this._getMinDay(date);
@@ -285,7 +323,7 @@ class Calendar {
         for (var d = 1; d <= maxMonthDay; d++) {
             date.setDate(d);
 
-            let weekDay = this._normalizeWeekDay(date.getDay());
+            let weekDay = this._normalizeWeekDay(ctx, date.getDay());
             // currentRow[weekDay] = CalendarHelper.toYyyymmdd(date);
             if (d < minDay || d > maxDay)
                 currentRow[weekDay] = m.callbackButton(this.constructor.strikethroughText(d.toString()), `${this.prefix}-ignore`);
@@ -299,23 +337,27 @@ class Calendar {
         }
     }
 
-    _normalizeWeekDay(weekDay) {
-        let result = weekDay - this.options.startWeekDay;
+    /**
+     * Normalize week day
+     * @param {object} ctx
+     * @param {number} weekDay
+     * @return {number}
+     */
+    _normalizeWeekDay(ctx, weekDay) {
+        let result = weekDay - this.getOptions(ctx).startWeekDay;
         if (result < 0) result += 7;
         return result;
     }
 
     /**
      * Calculates min day depending on input date and minDate in options
-     *
-     * @param {*Date} date Test date
-     *
-     * @returns int
+     * @param {Date} date Test date
+     * @return int
      */
     _getMinDay(date) {
         let minDay;
         if (this._isInMinMonth(date))
-            minDay = this.options.minDate.getDate();
+            minDay = this._minDate.getDate();
         else
             minDay = 1;
 
@@ -324,15 +366,13 @@ class Calendar {
 
     /**
      * Calculates max day depending on input date and maxDate in options
-     *
-     * @param {*Date} date Test date
-     *
-     * @returns int
+     * @param {Date} date Test date
+     * @return int
      */
     _getMaxDay(date) {
         let maxDay;
         if (this._isInMaxMonth(date))
-            maxDay = this.options.maxDate.getDate();
+            maxDay = this._maxDate.getDate();
         else
             maxDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 
@@ -340,17 +380,17 @@ class Calendar {
     }
 
     /**
-     * Check if inupt date is in same year and month as min date
+     * Check if input date is in same year and month as min date
      */
     _isInMinMonth(date) {
-        return this.constructor.isSameMonth(this.options.minDate, date);
+        return this.constructor.isSameMonth(this._minDate, date);
     }
 
     /**
-     * Check if inupt date is in same year and month as max date
+     * Check if input date is in same year and month as max date
      */
     _isInMaxMonth(date) {
-        return this.constructor.isSameMonth(this.options.maxDate, date);
+        return this.constructor.isSameMonth(this._maxDate, date);
     }
 }
 
