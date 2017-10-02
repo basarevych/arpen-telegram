@@ -9,9 +9,4 @@ module.exports = {
         'middleware',
         'services',
     ],
-
-    // Translation directories
-    i18n: [
-        'i18n',
-    ],
 };
