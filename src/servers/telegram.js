@@ -14,13 +14,15 @@ class Telegram {
      * @param {App} app                     Application
      * @param {object} config               Configuration
      * @param {Logger} logger               Logger service
+     * @param {Filer} filer                 Filer service
      */
-    constructor(app, config, logger) {
+    constructor(app, config, logger, filer) {
         this.name = null;
 
         this._app = app;
         this._config = config;
         this._logger = logger;
+        this._filer = filer;
     }
 
     /**
@@ -36,7 +38,7 @@ class Telegram {
      * @type {string[]}
      */
     static get requires() {
-        return [ 'app', 'config', 'logger' ];
+        return [ 'app', 'config', 'logger', 'filer' ];
     }
 
     /**
@@ -105,7 +107,46 @@ class Telegram {
             throw new Error(`Server ${name} was not properly initialized`);
 
         this._logger.debug('telegram', `${this.name}: Starting the bot`);
-        this.bot.startPolling();
+
+        if (this._config.get(`servers.${name}.webhook.enable`)) {
+            let key = this._config.get(`servers.${name}.webhook.key`);
+            if (key && key[0] !== '/')
+                key = path.join(this._config.base_path, key);
+            let cert = this._config.get(`servers.${name}.webhook.cert`);
+            if (cert && cert[0] !== '/')
+                cert = path.join(this._config.base_path, cert);
+            let ca = this._config.get(`server.${name}.webhook.ca`);
+            if (ca && ca[0] !== '/')
+                ca = path.join(this._config.base_path, ca);
+
+            let options = null;
+            if (key && cert) {
+                let promises = [
+                    this._filer.lockReadBuffer(key),
+                    this._filer.lockReadBuffer(cert),
+                ];
+                if (ca)
+                    promises.push(this._filer.lockReadBuffer(ca));
+
+                let [keyVal, certVal, caVal] = await Promise.all(promises);
+                options = {
+                    key: keyVal,
+                    cert: certVal,
+                };
+                if (caVal)
+                    options.ca = caVal;
+            }
+
+            this.bot.startWebhook(
+                this._config.get(`servers.${name}.webhook.path`) || 'bot',
+                options,
+                this._config.get(`servers.${name}.webhook.port`),
+                this._config.get(`servers.${name}.webhook.host`)
+            );
+        } else {
+            this.bot.startPolling();
+        }
+
         this.listening = true;
     }
 
