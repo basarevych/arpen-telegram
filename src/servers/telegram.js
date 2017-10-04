@@ -15,14 +15,16 @@ class Telegram {
      * @param {object} config               Configuration
      * @param {Logger} logger               Logger service
      * @param {Filer} filer                 Filer service
+     * @param {Util} util                   Util service
      */
-    constructor(app, config, logger, filer) {
+    constructor(app, config, logger, filer, util) {
         this.name = null;
 
         this._app = app;
         this._config = config;
         this._logger = logger;
         this._filer = filer;
+        this._util = util;
     }
 
     /**
@@ -38,7 +40,7 @@ class Telegram {
      * @type {string[]}
      */
     static get requires() {
-        return [ 'app', 'config', 'logger', 'filer' ];
+        return [ 'app', 'config', 'logger', 'filer', 'util' ];
     }
 
     /**
@@ -136,10 +138,13 @@ class Telegram {
                 };
                 if (caVal)
                     options.ca = caVal;
-                certificate = certVal;
+                certificate = { source: certVal };
             }
 
-            let botPath = this._config.get(`servers.${name}.webhook.path`) || 'bot';
+            let botPath = this._config.get(`servers.${name}.webhook.path`);
+            if (!botPath)
+                botPath = this._util.getRandomString(64);
+
             let hook = `${options ? 'https' : 'http'}://`;
             hook += this._config.get(`servers.${name}.webhook.host`);
             hook += ':';
@@ -149,7 +154,7 @@ class Telegram {
 
             this.bot.telegram.setWebhook(hook, certificate);
             this.bot.startWebhook(
-                botPath,
+                `/${botPath}`,
                 options,
                 this._config.get(`servers.${name}.webhook.port`),
                 this._config.get(`servers.${name}.webhook.host`)
