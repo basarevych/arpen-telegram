@@ -152,7 +152,7 @@ class Telegram {
             hook += '/';
             hook += botPath;
 
-            this.bot.telegram.setWebhook(hook, certificate);
+            this.bot.telegram.setWebhook(hook, certificate, this._config.get(`servers.${name}.webhook.max_connections`) || 40);
             this.bot.startWebhook(
                 `/${botPath}`,
                 options,
