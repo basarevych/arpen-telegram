@@ -120,6 +120,7 @@ class Telegram {
                 ca = path.join(this._config.base_path, ca);
 
             let options = null;
+            let certificate = undefined;
             if (key && cert) {
                 let promises = [
                     this._filer.lockReadBuffer(key),
@@ -135,10 +136,20 @@ class Telegram {
                 };
                 if (caVal)
                     options.ca = caVal;
+                certificate = certVal;
             }
 
+            let botPath = this._config.get(`servers.${name}.webhook.path`) || 'bot';
+            let hook = `${options ? 'https' : 'http'}://`;
+            hook += this._config.get(`servers.${name}.webhook.host`);
+            hook += ':';
+            hook += this._config.get(`servers.${name}.webhook.port`);
+            hook += '/';
+            hook += botPath;
+
+            this.bot.telegram.setWebhook(hook, certificate);
             this.bot.startWebhook(
-                this._config.get(`servers.${name}.webhook.path`) || 'bot',
+                botPath,
                 options,
                 this._config.get(`servers.${name}.webhook.port`),
                 this._config.get(`servers.${name}.webhook.host`)
@@ -146,8 +157,6 @@ class Telegram {
         } else {
             this.bot.startPolling();
         }
-
-        this.listening = true;
     }
 
     /**
