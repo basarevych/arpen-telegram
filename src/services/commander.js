@@ -54,6 +54,7 @@ class Commander {
         return (ctx, next) => {
             ctx.commander = {
                 process: this.process.bind(this, ctx),
+                action: this.action.bind(this, ctx),
             };
             return next(ctx);
         };
