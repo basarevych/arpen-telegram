@@ -24,7 +24,10 @@ class Commander {
         this._i18n = i18n;
 
         this.commands = new Map();
+        this.scenes = new Map();
         this.callbacks = new Map();
+
+        this._priorities = [];
     }
 
     /**
@@ -60,8 +63,45 @@ class Commander {
      * Add command
      * @param {object} command
      */
-    add(command) {
+    addCommand(command) {
         this.commands.set(command.name, command);
+
+        for (let item of this._priorities) {
+            if (item.name === command.name)
+                return;
+        }
+
+        this._priorities.push({
+            name: command.name,
+            priority: command.priority,
+        });
+        this._priorities.sort((a, b) => a.priority - b.priority);
+    }
+
+    /**
+     * Get command
+     * @param {string} name
+     * @return {object}
+     */
+    getCommand(name) {
+        return this.commands.get(name);
+    }
+
+    /**
+     * Add scene
+     * @param {object} scene
+     */
+    addScene(scene) {
+        this.scenes.set(scene.name, scene);
+    }
+
+    /**
+     * Get scene
+     * @param {string} name
+     * @return {object}
+     */
+    getScene(name) {
+        return this.scenes.get(name);
     }
 
     /**
@@ -92,16 +132,36 @@ class Commander {
                 }
             }
 
-            let triggered = false;
-            for (let command of this.commands.values()) {
+            for (let item of this._priorities) {
+                let command = this.getCommand(item.name);
                 if (await command.process(this, ctx, scene))
-                    triggered = true;
+                    return true;
             }
-            return triggered;
+            return false;
         } catch (error) {
             this._logger.error(new NError(error, { ctx }, 'Commander.process()'));
         }
         return false;
+    }
+
+    /**
+     * Handle menu action
+     * @param {object} ctx
+     * @return {Promise}
+     */
+    async action(ctx) {
+        this._logger.debug('commander', `Action ${ctx.match[1]} - ${ctx.match[2]}`);
+        try {
+            for (let item of this._priorities) {
+                let command = this.getCommand(item.name);
+                if (command.name === ctx.match[1] && typeof command.action === 'function') {
+                    await command.action(this, ctx, ctx.match[2]);
+                    return;
+                }
+            }
+        } catch (error) {
+            this._logger.error(new NError(error, { ctx }, 'Commander.action()'));
+        }
     }
 
     /**

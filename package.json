@@ -1,6 +1,6 @@
 {
   "name": "arpen-telegram",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "license": "MIT",
   "author": "Ross Basarevych <basarevych@gmail.com>",
   "description": "ARPEN",
@@ -9,8 +9,10 @@
     "url": "git+https://github.com/basarevych/arpen-telegram.git"
   },
   "dependencies": {
+    "argv": "~0.0.2",
     "debug": "~3.0.1",
     "merge": "~1.2.0",
+    "moment-timezone": "~0.5.13",
     "natural": "~0.5.4",
     "nerror": "~1.0.0",
     "telegraf-session-local": "~0.0.4"

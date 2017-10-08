@@ -2,6 +2,7 @@
  * Telegram bot server
  * @module telegram/servers/telegram
  */
+const path = require('path');
 const Telegraf = require('telegraf');
 const NError = require('nerror');
 
@@ -122,7 +123,7 @@ class Telegram {
                 ca = path.join(this._config.base_path, ca);
 
             let options = null;
-            let certificate = undefined;
+            let certificate;
             if (key && cert) {
                 let promises = [
                     this._filer.lockReadBuffer(key),
