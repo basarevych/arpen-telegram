@@ -134,7 +134,7 @@ class Commander {
 
             for (let item of this._priorities) {
                 let command = this.getCommand(item.name);
-                if (await command.process(this, ctx, scene))
+                if (typeof command.process === 'function' && await command.process(this, ctx, scene))
                     return true;
             }
             return false;
@@ -147,17 +147,15 @@ class Commander {
     /**
      * Handle menu action
      * @param {object} ctx
+     * @param {object} scene
      * @return {Promise}
      */
-    async action(ctx) {
-        this._logger.debug('commander', `Action ${ctx.match[1]} - ${ctx.match[2]}`);
+    async action(ctx, scene) {
         try {
             for (let item of this._priorities) {
                 let command = this.getCommand(item.name);
-                if (command.name === ctx.match[1] && typeof command.action === 'function') {
-                    await command.action(this, ctx, ctx.match[2]);
-                    return;
-                }
+                if (command.name === ctx.match[1] && typeof command.action === 'function')
+                    return await command.action(this, ctx, scene);
             }
         } catch (error) {
             this._logger.error(new NError(error, { ctx }, 'Commander.action()'));

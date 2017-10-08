@@ -39,7 +39,6 @@ class Commander {
     async register(server) {
         server.commander = this._app.get('telegram.services.commander');
         server.bot.use(server.commander.middleware());
-        server.bot.action(/^command-([^-]+)-(.*)$/i, server.commander.action.bind(server.commander));
     }
 }
 
