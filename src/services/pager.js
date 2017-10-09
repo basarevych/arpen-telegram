@@ -19,6 +19,7 @@ class Pager {
         this._logger = logger;
         this._prefix = 'pager';
         this._width = 10;
+        this._scenes = new Set();
     }
 
     /**
@@ -35,22 +36,6 @@ class Pager {
      */
     static get requires() {
         return [ 'app', 'logger' ];
-    }
-
-    /**
-     * Bot setter
-     * @param {object} bot
-     */
-    set bot(bot) {
-        this._bot = bot;
-    }
-
-    /**
-     * Bot getter
-     * @type {object}
-     */
-    get bot() {
-        return this._bot;
     }
 
     /**
@@ -102,87 +87,25 @@ class Pager {
     }
 
     /**
-     * Install action handlers
-     * @param {object} [bot]
-     */
-    install(bot) {
-        if (bot)
-            this.bot = bot;
-
-        this.bot.action(new RegExp(`^${this.prefix}-page-([0-9]+)-([0-9]+)-(.*)$`), async ctx => {
-            try {
-                let offset, page, extra;
-                try {
-                    offset = parseInt(ctx.match[1]);
-                    page = parseInt(ctx.match[2]);
-                    if (ctx.match[3])
-                        extra = ctx.match[3];
-                } catch (error) {
-                    return;
-                }
-
-                if (this.search) {
-                    let result = await this.search(ctx, page, extra);
-                    result.offset = offset;
-                    if (result.enablePager)
-                        return ctx.editMessageText(result.message, this._getMarkup(result, extra));
-                    else
-                        return ctx.editMessageText(result.message);
-                }
-            } catch (error) {
-                this._logger.error(new NError(error, { ctx }, 'Pager.pageHandler()'));
-            }
-        });
-
-        this.bot.action(new RegExp(`^${this.prefix}-offset-([0-9]+)-([0-9]+)-(.*)$`), async ctx => {
-            try {
-                let offset, page, extra;
-                try {
-                    offset = parseInt(ctx.match[1]);
-                    page = parseInt(ctx.match[2]);
-                    if (ctx.match[3])
-                        extra = ctx.match[3];
-                } catch (error) {
-                    return;
-                }
-
-                if (this.search) {
-                    let result = await this.search(ctx, page, extra);
-                    result.offset = offset;
-                    result.pageNumber = page;
-                    if (result.enablePager)
-                        return ctx.editMessageText(ctx.callbackQuery.message.text, this._getMarkup(result, extra));
-                    else
-                        return ctx.editMessageText(ctx.callbackQuery.message.text);
-                }
-            } catch (error) {
-                this._logger.error(new NError(error, { ctx }, 'Pager.offsetHandler()'));
-            }
-        });
-
-        this.bot.action(`${this.prefix}-ignore`, () => {});
-    }
-
-    /**
      * Send page of data to the chat
      * @param {object} ctx
+     * @param {object} scene
      * @param {number} page
      * @param {string} [extra]
      * @return {Promise}
      */
-    async sendPage(ctx, page, extra) {
+    async sendPage(ctx, scene, page, extra = '') {
         try {
             if (!this.search)
                 return;
 
-            let result = await this.search(ctx, page, extra);
-            result.offset = 1;
-            if (result.enablePager)
-                ctx.reply(result.message, this._getMarkup(result, extra));
-            else
-                ctx.reply(result.message);
+            this._install(scene);
+
+            let result = await this.search(ctx, scene, page, extra);
+            result.offset = Math.ceil(page / this.width);
+            ctx.reply(result.message, result.keyboard || this._getMarkup(result, extra));
         } catch (error) {
-            this._logger.error(new NError(error, { ctx }, 'Pager.sendPage()'));
+            this._logger.error(new NError(error, { ctx, scene }, 'Pager.sendPage()'));
         }
     }
 
@@ -229,6 +152,64 @@ class Pager {
             second.push(m.callbackButton('>>', `${this.prefix}-offset-${info.offset + 1}-${info.pageNumber}-${extra || ''}`));
             return m.inlineKeyboard(second.length === 1 ? first.concat(second) : [first, second]);
         });
+    }
+
+    /**
+     * Install action handlers
+     * @param {object} scene
+     */
+    _install(scene) {
+        if (this._scenes.has(scene.name))
+            return;
+
+        this._scenes.add(scene.name);
+
+        scene.scene.action(new RegExp(`^${this.prefix}-page-([0-9]+)-([0-9]+)-(.*)$`), async ctx => {
+            try {
+                let offset, page, extra;
+                try {
+                    offset = parseInt(ctx.match[1]);
+                    page = parseInt(ctx.match[2]);
+                    if (ctx.match[3])
+                        extra = ctx.match[3];
+                } catch (error) {
+                    return;
+                }
+
+                if (this.search) {
+                    let result = await this.search(ctx, scene, page, extra);
+                    result.offset = offset;
+                    return ctx.editMessageText(result.message, result.keyboard || this._getMarkup(result, extra));
+                }
+            } catch (error) {
+                this._logger.error(new NError(error, { ctx }, 'Pager.pageHandler()'));
+            }
+        });
+
+        scene.scene.action(new RegExp(`^${this.prefix}-offset-([0-9]+)-([0-9]+)-(.*)$`), async ctx => {
+            try {
+                let offset, page, extra;
+                try {
+                    offset = parseInt(ctx.match[1]);
+                    page = parseInt(ctx.match[2]);
+                    if (ctx.match[3])
+                        extra = ctx.match[3];
+                } catch (error) {
+                    return;
+                }
+
+                if (this.search) {
+                    let result = await this.search(ctx, scene, page, extra);
+                    result.offset = offset;
+                    result.pageNumber = page;
+                    return ctx.editMessageText(ctx.callbackQuery.message.text, result.keyboard || this._getMarkup(result, extra));
+                }
+            } catch (error) {
+                this._logger.error(new NError(error, { ctx }, 'Pager.offsetHandler()'));
+            }
+        });
+
+        scene.scene.action(`${this.prefix}-ignore`, () => {});
     }
 }
 

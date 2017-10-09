@@ -20,6 +20,7 @@ class Calendar {
         this._prefix = 'calendar';
         this._minDate = null;
         this._maxDate = null;
+        this._scenes = new Set();
     }
 
     /**
@@ -77,22 +78,6 @@ class Calendar {
             (mm > 9 ? '' : '0') + mm,
             (dd > 9 ? '' : '0') + dd
         ].join('-');
-    }
-
-    /**
-     * Bot setter
-     * @param {object} bot
-     */
-    set bot(bot) {
-        this._bot = bot;
-    }
-
-    /**
-     * Bot getter
-     * @type {object}
-     */
-    get bot() {
-        return this._bot;
     }
 
     /**
@@ -162,77 +147,22 @@ class Calendar {
     }
 
     /**
-     * Install action handlers
-     * @param {object} [bot]
-     */
-    install(bot) {
-        if (bot)
-            this.bot = bot;
-
-        this.bot.action(new RegExp(`^${this.prefix}-date-([-0-9]+)$`), async ctx => {
-            try {
-                let date;
-                try {
-                    date = ctx.match[1];
-                } catch (error) {
-                    return;
-                }
-
-                if (this.handler)
-                    await this.handler(ctx, date);
-            } catch (error) {
-                this._logger.error(new NError(error, { ctx }, 'Calendar.dateHandler()'));
-            }
-        });
-
-        this.bot.action(new RegExp(`^${this.prefix}-prev-([-0-9]+)$`), async ctx => {
-            try {
-                let dateString;
-                try {
-                    dateString = ctx.match[1];
-                } catch (error) {
-                    return;
-                }
-
-                let date = new Date(dateString);
-                date.setMonth(date.getMonth() - 1);
-
-                let prevText = ctx.callbackQuery.message.text;
-                ctx.editMessageText(prevText, this._getMarkup(ctx, date));
-            } catch (error) {
-                this._logger.error(new NError(error, { ctx }, 'Calendar.prevHandler()'));
-            }
-        });
-
-        this.bot.action(new RegExp(`^${this.prefix}-next-([-0-9]+)$`), async ctx => {
-            try {
-                let dateString;
-                try {
-                    dateString = ctx.match[1];
-                } catch (error) {
-                    return;
-                }
-
-                let date = new Date(dateString);
-                date.setMonth(date.getMonth() + 1);
-
-                let prevText = ctx.callbackQuery.message.text;
-                ctx.editMessageText(prevText, this._getMarkup(ctx, date));
-            } catch (error) {
-                this._logger.error(new NError(error, { ctx }, 'Calendar.nextHandler()'));
-            }
-        });
-
-        this.bot.action(`${this.prefix}-ignore`, () => {});
-    }
-
-    /**
      * Return Calendar Markup
      * @param {object} ctx
+     * @param {object} scene
      * @return {object}
      */
-    getCalendar(ctx) {
-        return this._getMarkup(ctx, new Date());
+    getCalendar(ctx, scene) {
+        try {
+            if (!this.handler)
+                return;
+
+            this._install(scene);
+
+            return this._getMarkup(ctx, new Date());
+        } catch (error) {
+            this._logger.error(new NError(error, { ctx, scene }, 'Calendar.getCalendar()'));
+        }
     }
 
     /**
@@ -391,6 +321,73 @@ class Calendar {
      */
     _isInMaxMonth(date) {
         return this.constructor.isSameMonth(this._maxDate, date);
+    }
+
+    /**
+     * Install action handlers
+     * @param {object} scene
+     */
+    _install(scene) {
+        if (this._scenes.has(scene.name))
+            return;
+
+        this._scenes.add(scene.name);
+
+        scene.scene.action(new RegExp(`^${this.prefix}-date-([-0-9]+)$`), async ctx => {
+            try {
+                let date;
+                try {
+                    date = ctx.match[1];
+                } catch (error) {
+                    return;
+                }
+
+                if (this.handler)
+                    await this.handler(ctx, scene, date);
+            } catch (error) {
+                this._logger.error(new NError(error, { ctx }, 'Calendar.dateHandler()'));
+            }
+        });
+
+        scene.scene.action(new RegExp(`^${this.prefix}-prev-([-0-9]+)$`), async ctx => {
+            try {
+                let dateString;
+                try {
+                    dateString = ctx.match[1];
+                } catch (error) {
+                    return;
+                }
+
+                let date = new Date(dateString);
+                date.setMonth(date.getMonth() - 1);
+
+                let prevText = ctx.callbackQuery.message.text;
+                ctx.editMessageText(prevText, this._getMarkup(ctx, date));
+            } catch (error) {
+                this._logger.error(new NError(error, { ctx }, 'Calendar.prevHandler()'));
+            }
+        });
+
+        scene.scene.action(new RegExp(`^${this.prefix}-next-([-0-9]+)$`), async ctx => {
+            try {
+                let dateString;
+                try {
+                    dateString = ctx.match[1];
+                } catch (error) {
+                    return;
+                }
+
+                let date = new Date(dateString);
+                date.setMonth(date.getMonth() + 1);
+
+                let prevText = ctx.callbackQuery.message.text;
+                ctx.editMessageText(prevText, this._getMarkup(ctx, date));
+            } catch (error) {
+                this._logger.error(new NError(error, { ctx }, 'Calendar.nextHandler()'));
+            }
+        });
+
+        scene.scene.action(`${this.prefix}-ignore`, () => {});
     }
 }
 
