@@ -193,13 +193,13 @@ class Commander {
     /**
      * Check if input contains everything of search
      * @param {string} locale
-     * @param {string} input
-     * @param {string} search
+     * @param {string|string[]} input
+     * @param {string|string[]} search
      * @return {boolean}
      */
     hasAll(locale, input, search) {
-        let inputTokens = this.stem(locale, input);
-        let searchTokens = this.stem(locale, search);
+        let inputTokens = Array.isArray(input) ? input : this.stem(locale, input);
+        let searchTokens = Array.isArray(search) ? search : this.stem(locale, search);
         for (let item of searchTokens) {
             if (!inputTokens.includes(item))
                 return false;
@@ -210,13 +210,13 @@ class Commander {
     /**
      * Check if input contains anything of search
      * @param {string} locale
-     * @param {string} input
-     * @param {string} search
+     * @param {string|string[]} input
+     * @param {string|string[]} search
      * @return {boolean}
      */
     hasAny(locale, input, search) {
-        let inputTokens = this.stem(locale, input);
-        let searchTokens = this.stem(locale, search);
+        let inputTokens = Array.isArray(input) ? input : this.stem(locale, input);
+        let searchTokens = Array.isArray(search) ? search : this.stem(locale, search);
         for (let item of searchTokens) {
             if (inputTokens.includes(item))
                 return true;
