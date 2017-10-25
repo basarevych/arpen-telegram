@@ -175,10 +175,35 @@ class Telegram {
             throw new Error(`Server ${name} was not properly initialized`);
 
         if (this.bot && this.listening) {
-            this.bot.stop();
+            await this.bot.stop();
             this.bot = null;
             this.listening = false;
         }
+        let middlewareConfig = this._config.get(`servers.${name}.middleware`);
+        if (!Array.isArray(middlewareConfig) || !this._app.has('express.middleware'))
+            return;
+
+        this._logger.debug('telegram', `${this.name}: Unloading middleware`);
+        let middleware = this._app.get('telegram.middleware');
+        return middlewareConfig.reduce(
+            async (prev, cur) => {
+                await prev;
+
+                if (!middleware.has(cur))
+                    return;
+
+                let obj = middleware.get(cur);
+                if (typeof obj.unregister !== 'function')
+                    return;
+
+                this._logger.debug('telegram', `${this.name}: Unregistering middleware ${cur}`);
+                let result = obj.unregister(this);
+                if (result === null || typeof result !== 'object' || typeof result.then !== 'function')
+                    throw new Error(`Middleware '${cur}' unregister() did not return a Promise`);
+                return result;
+            },
+            Promise.resolve()
+        );
     }
 
     /**

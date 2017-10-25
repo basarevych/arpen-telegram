@@ -4,10 +4,6 @@
 module.exports = {
     // Load module classes and services, path names
     autoload: [
-        'module.js',
-        'servers',
-        'services',
-        'middleware',
-        'commands',
+        'src',
     ],
 };
