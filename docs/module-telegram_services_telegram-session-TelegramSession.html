@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>Documentation Class: Pager</title>
+	<title>Documentation Class: TelegramSession</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -72,18 +72,18 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: Pager</h1>
+	<h1 class="page-title">Class: TelegramSession</h1>
 <section>
 
 <header>
     
         <h2>
-            <span class="ancestors"><a href="module-telegram_services_pager.html">telegram/services/pager</a>~</span>
+            <span class="ancestors"><a href="module-telegram_services_telegram-session.html">telegram/services/telegram-session</a>~</span>
         
-        Pager
+        TelegramSession
         </h2>
         
-            <div class="class-description">Service class</div>
+            <div class="class-description">Telegram session bridge service</div>
         
     
 </header>
@@ -95,7 +95,7 @@
         
 <hr>
 <dt>
-    <h4 class="name" id="Pager"><span class="type-signature"></span>new Pager(app, logger)</h4>
+    <h4 class="name" id="TelegramSession"><span class="type-signature"></span>new TelegramSession(app, config, logger, server)</h4>
     
     
 </dt>
@@ -155,7 +155,31 @@
 
             
 
-            <td class="description last">Application</td>
+            <td class="description last">The application</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>config</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Configuration</td>
         </tr>
 
     
@@ -180,6 +204,30 @@
             
 
             <td class="description last">Logger service</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>server</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Server name</td>
         </tr>
 
     
@@ -270,7 +318,7 @@
 <dd>
     
     <div class="description">
-        Service name is 'telegram.services.pager'
+        Service name is 'telegramSession'
     </div>
     
 
@@ -404,75 +452,15 @@
         
             
 <hr>
-<dt class="name" id="prefix">
-    <h4 id="prefix"><span class="type-signature"></span>prefix<span class="type-signature"></span></h4>
+<dt class="name" id="saveInterval">
+    <h4 id="saveInterval"><span class="type-signature"></span>saveInterval<span class="type-signature"> :number</span></h4>
 
     
 </dt>
 <dd>
     
     <div class="description">
-        Action prefix setter
-    </div>
-    
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt class="name" id="prefix">
-    <h4 id="prefix"><span class="type-signature"></span>prefix<span class="type-signature"> :string</span></h4>
-
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        Action prefix getter
+        Combine and delay write operations, seconds
     </div>
     
 
@@ -481,7 +469,7 @@
         <ul>
             <li>
                 
-<span class="param-type">string</span>
+<span class="param-type">number</span>
 
 
 
@@ -535,18 +523,29 @@
         
             
 <hr>
-<dt class="name" id="width">
-    <h4 id="width"><span class="type-signature"></span>width<span class="type-signature"></span></h4>
+<dt class="name" id="expirationTimeout">
+    <h4 id="expirationTimeout"><span class="type-signature"></span>expirationTimeout<span class="type-signature"> :number</span></h4>
 
     
 </dt>
 <dd>
     
     <div class="description">
-        Pager width setter
+        Expiration timeout, seconds
     </div>
     
 
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">number</span>
+
+
+
+            </li>
+        </ul>
     
 
     
@@ -595,138 +594,29 @@
         
             
 <hr>
-<dt class="name" id="width">
-    <h4 id="width"><span class="type-signature"></span>width<span class="type-signature"></span></h4>
+<dt class="name" id="expirationInterval">
+    <h4 id="expirationInterval"><span class="type-signature"></span>expirationInterval<span class="type-signature"> :number</span></h4>
 
     
 </dt>
 <dd>
     
     <div class="description">
-        Pager width getter
+        Expiration scan interval, seconds
     </div>
     
 
     
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">number</span>
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt class="name" id="search">
-    <h4 id="search"><span class="type-signature"></span>search<span class="type-signature"></span></h4>
-
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        Search callback setter
-    </div>
-    
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt class="name" id="search">
-    <h4 id="search"><span class="type-signature"></span>search<span class="type-signature"></span></h4>
-
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        Search callback getter
-    </div>
-    
-
+            </li>
+        </ul>
     
 
     
@@ -782,7 +672,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="sendPage"><span class="type-signature">&lt;async> </span>sendPage(ctx, scene, page [, extra])</h4>
+    <h4 class="name" id="create"><span class="type-signature">&lt;async> </span>create(user, from)</h4>
     
     
 </dt>
@@ -790,7 +680,7 @@
 
     
     <div class="description">
-        Send page of data to the chat
+        Create session model
     </div>
     
 
@@ -813,7 +703,184 @@
         <th>Type</th>
 
         
-        <th>Argument</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>user</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">UserModel</span>
+|
+
+<span class="param-type">null</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">User model or null for anonymous session</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>from</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Telegram from object</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    Resolves to session model
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="find"><span class="type-signature">&lt;async> </span>find(telegramId, from)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Find session model
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
         
 
         
@@ -827,103 +894,7 @@
 
         <tr>
             
-                <td class="name"><code>ctx</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>scene</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>page</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>extra</code></td>
+                <td class="name"><code>telegramId</code></td>
             
 
             <td class="type">
@@ -937,20 +908,210 @@
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
 
-                
+            
 
+            <td class="description last">Telegram ID</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>from</code></td>
+            
+
+            <td class="type">
+            
                 
-                </td>
+<span class="param-type">*</span>
+
+
+
+            
+            </td>
+
             
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Telegram from object</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    Resolves to session model or null
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="save"><span class="type-signature">&lt;async> </span>save(session, from)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Save session model
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>session</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">SessionModel</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Session model</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>from</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Telegram from object</td>
         </tr>
 
     
@@ -1038,7 +1199,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="_getMarkup"><span class="type-signature"></span>_getMarkup(info [, extra])</h4>
+    <h4 class="name" id="destroy"><span class="type-signature">&lt;async> </span>destroy(session)</h4>
     
     
 </dt>
@@ -1046,7 +1207,7 @@
 
     
     <div class="description">
-        Get pager markup
+        Delete session model
     </div>
     
 
@@ -1069,8 +1230,6 @@
         <th>Type</th>
 
         
-        <th>Argument</th>
-        
 
         
 
@@ -1083,13 +1242,13 @@
 
         <tr>
             
-                <td class="name"><code>info</code></td>
+                <td class="name"><code>session</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type">SessionModel</span>
 
 
 
@@ -1097,52 +1256,10 @@
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
 
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>extra</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
+            <td class="description last">Session model</td>
         </tr>
 
     
@@ -1213,7 +1330,7 @@
     </dt>
     <dd>
         
-<span class="param-type">*</span>
+<span class="param-type">Promise</span>
 
 
 
@@ -1230,7 +1347,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="_install"><span class="type-signature"></span>_install(scene)</h4>
+    <h4 class="name" id="expire"><span class="type-signature">&lt;async> </span>expire()</h4>
     
     
 </dt>
@@ -1238,7 +1355,7 @@
 
     
     <div class="description">
-        Install action handlers
+        Delete expired session models
     </div>
     
 
@@ -1247,56 +1364,6 @@
     
 
     
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>scene</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
     
 
     
@@ -1350,6 +1417,26 @@
     
 
     
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
 
     
 </dd>
