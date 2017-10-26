@@ -90,7 +90,7 @@ class Telegram {
                     middleware.set(cur, obj);
                 }
 
-                this._logger.debug('express', `${this.name}: Registering middleware ${cur}`);
+                this._logger.debug('telegram', `${this.name}: Registering middleware ${cur}`);
                 let result = obj.register(this);
                 if (result === null || typeof result !== 'object' || typeof result.then !== 'function')
                     throw new Error(`Middleware '${cur}' register() did not return a Promise`);
@@ -180,7 +180,7 @@ class Telegram {
             this.listening = false;
         }
         let middlewareConfig = this._config.get(`servers.${name}.middleware`);
-        if (!Array.isArray(middlewareConfig) || !this._app.has('express.middleware'))
+        if (!Array.isArray(middlewareConfig) || !this._app.has('telegram.middleware'))
             return;
 
         this._logger.debug('telegram', `${this.name}: Unloading middleware`);
